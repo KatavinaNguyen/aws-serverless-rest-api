@@ -1,0 +1,83 @@
+Step 1: Create A DynamoDB Table
+  1. Log in to your AWS Console and search for DynamoDB under the "Databases" section.
+  2. Click "Create Table".
+  3. Name your table and set up the partition key (you can leave it as a string or change it to a number—it’s your choice).
+  4. Leave all the default settings as they are and hit "Create Table" at the bottom of the page.
+  5. Wait for the table to initialize. Once the status says "Active", it’s ready to use!
+
+Step 2: Set Up an IAM Role 
+Before we create the Lambda function, we need an IAM role to allow it to access DynamoDB and CloudWatch for debugging.
+  1. Search for IAM in the AWS Console and click on Roles.
+  2. Click "Create Role".
+  3. Select the policies you’ll need:
+    * CloudWatch Full Access: So the function can write logs for your API requests.
+    * DynamoDB Full Access: So the function can modify and create items in your table.
+  4. Once both policies are attached, name the role and hit "Create Role".
+
+Step 3: Create the Lambda Function 
+  1. Search for Lambda in the AWS Console and click "Create Function".
+  2. Choose "Author from scratch" and:
+    * Name your function.
+    * Set the runtime to Python 3.13 and the architecture to x86_64.
+  3. For execution role, select "Use an existing role" and pick the IAM role you just created from the dropdown.
+  4. Click "Create Function". Your Lambda function is now created!
+  5. Before moving on, configure the function:
+    * Scroll down to the Configuration tab.
+    * Under General Settings, change the memory to 500 MB and the timeout to 1 minute.
+    * Click Save.
+    * (Why change this?) Increasing memory and timeout ensures your function has enough resources to handle most API requests.
+
+Step 4: Create the API Gateway
+  1. Search for API Gateway in the AWS Console.
+  2. Click "Create API" and select the "HTTP API" option (it’s the simplest and most cost-effective for this project).
+  3. Click "Build", then choose "New API" and:
+    * Name your API.
+    * Leave it as "Regional".
+
+Step 5: Add Resources and Methods to Your API
+  1. In API Gateway, you’ll create resources for the API paths:
+    * Click "Create Resource".
+    * Create the following paths:
+      /health
+      /product
+      /products
+    * Check the "Enable CORS" box when creating each resource. (Why?) This allows your API to accept requests from different origins, like Postman or a frontend app.
+    * Make sure your resources aren’t nested inside each other unless intended.
+  2. Add methods to each resource:
+    * Integration type: Lambda Function.
+    * Check "Use Lambda Proxy Integration". (Why?) This allows the Lambda function to receive the full request and return a response.
+    * Select your Lambda function from the dropdown and create a file structure that looks like this by adding methods: 
+
+/ 
+  /health 
+    GET 
+  /product
+    GET 
+    POST 
+    PATCH 
+    DELETE 
+  /products 
+    GET 
+
+Step 6: Deploy the API
+  1. In API Gateway, click "Deploy API".
+  2. Select "New Stage", give it a name (e.g., prod), and deploy it.
+  3. Once deployed, you’ll see an Invoke URL—this is the endpoint for your API.
+  (Important Note): This API is now open to the world. If someone knows your URL, they can use it. For security, you’ll want to set up API authentication or API keys in a real-world project.
+
+Step 7: Write Your Lambda Function Code
+  1. Go back to the Lambda Console and click on your function.
+  2. Scroll down to the Code section and in this, copy and paste the two files I've included in the repo "lambda_function.py" and "custom_encoder.py"
+  3. If you were interested in understanding the code, there are comments I included that are explanations of how it works. 
+
+Step 8: Test the API on Postman 
+  1. Create a Postman account and log into the desktop app.
+  2. Copy the Invoke URL that should be found in the API Gateway Dashboard and paste it into a new tab on Postman. 
+  3. Test the health of your API by using GET > /health > Send, and make sure that it says 200 OK to know whether your API is running. 
+  4. How to perform other operations: 
+    1. Select your method (GET, POST, PATCH, DELETE)
+    2. Edit the path to the URL by adding the path you want to work in (/health, /product, /products)
+    3. Click 'Raw' and type in JSON information for the operation you want to perform. 
+    4. Press 'Send' when you're ready to submit.
+
+Thank you! 
